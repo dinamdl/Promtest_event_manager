@@ -45,11 +45,11 @@
 .upcoming header a{font-size:13px;color:var(--accent);text-decoration:none;font-weight:600}
 .upcoming header a:hover{text-decoration:underline}
 .up-list{list-style:none;margin:0;padding:0}
-.up-list li{display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.up-list li{display:grid;grid-template-columns:70px 1fr;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
 .up-list li:last-child{border-bottom:0}
-.up-date{background:var(--accent-soft);color:var(--accent);border-radius:10px;text-align:center;padding:6px 0}
+.up-date{background:var(--accent-soft);color:var(--accent);border-radius:12px;text-align:center;padding:10px 0}
 .up-date b{display:block;font-size:20px;line-height:1.1;font-variant-numeric:tabular-nums}
-.up-date span{font-size:11.5px}
+.up-date span{font-size:12.5px}
 .up-body{min-width:0;display:grid;gap:2px}
 .up-name{font-weight:600;font-size:14.5px;line-height:1.35;overflow-wrap:anywhere}
 .up-meta{font-size:12.5px;color:var(--muted)}
@@ -59,9 +59,15 @@
 /* organizations strip */
 .orgs{position:relative;z-index:1;border-top:1px solid var(--line);background:var(--surface)}
 .orgs-in{max-width:1120px;margin:0 auto;padding-inline:28px;padding-block:18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px}
+.orgs-in{justify-content:center}
+.orgs-in > span:empty{display:none}
+.orgs-in ul{justify-content:center}
 .orgs-in > span{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
 .orgs-in ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .orgs-in li{font-weight:700;font-size:14px;color:var(--ink);padding:5px 12px;border-radius:999px;border:1px solid var(--line)}
+.orgs-in ul{align-items:center;gap:12px}
+.orgs-in li.has-logo{padding:6px 12px;border-radius:10px;background:#ffffff;display:flex;align-items:center}
+.org-logo{display:block;height:46px;width:auto;max-width:170px;object-fit:contain}
 @media (prefers-reduced-motion:no-preference){
   .hero-copy,.upcoming{animation:rise .5s ease-out both}
   .upcoming{animation-delay:.08s}

@@ -57,7 +57,7 @@
   </main>
 
   <footer class="orgs" id="orgs" hidden>
-    <div class="orgs-in"><span>Կազմակերպություններ</span><ul id="orgList"></ul></div>
+    <div class="orgs-in"><span></span><ul id="orgList"></ul></div>
   </footer>
 </div>
 
@@ -95,7 +95,14 @@
   // organizations from the lists
   var lists=null; try{lists=JSON.parse(localStorage.getItem("promtest-lists-v1")||"null")}catch(e){}
   var orgs=(lists&&Array.isArray(lists.orgs)&&lists.orgs.length?lists.orgs:(window.SEED_LISTS&&window.SEED_LISTS.orgs)||[]);
-  if(orgs.length){var ol=document.getElementById("orgList");orgs.forEach(function(o){ol.appendChild(el("li",null,o))});document.getElementById("orgs").hidden=false}
+  // logos listed in ORG_LOGOS (data.js); organizations without a logo file are left out
+  var logos=window.ORG_LOGOS||{};
+  if(orgs.length){var ol=document.getElementById("orgList");orgs.forEach(function(o){
+    var li=el("li"); var src=logos[o];
+    if(!src)return; // only organizations that have a logo are shown
+    var img=new Image();img.src=src;img.alt=o;img.title=o;img.className="org-logo";
+    img.onerror=function(){li.remove();};li.className="has-logo";li.appendChild(img);
+    ol.appendChild(li)});document.getElementById("orgs").hidden=false}
 })();
 </script>
 </body>

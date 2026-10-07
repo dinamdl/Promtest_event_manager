@@ -122,3 +122,13 @@ window.SEED_LISTS = {
     "Պաստառ"
   ]
 };
+
+// Կազմակերպությունների լոգոներ գլխավոր էջի համար։
+// Լոգոյի ֆայլը դրեք logos թղթապանակում՝ այստեղ նշված անունով։ Եթե ֆայլը չկա, ցույց է տրվում անունը։
+window.ORG_LOGOS = {
+  "Prom-Test": "logo.png",
+  "Diagnostica": "logos/diagnostica.png",
+  "AMTC": "logos/amtc.png",
+  "PetCT": "logos/petct.png",
+  "Proftest": "logos/proftest.png"
+};

@@ -250,6 +250,16 @@ document.addEventListener("click",e=>{
 document.addEventListener("input",e=>{ if(!dp||e.target!==dp.input)return; const iso=parseDMY(e.target.value); if(iso){const x=d(iso);dp.y=x.getFullYear();dp.m=x.getMonth();renderDP()} });
 document.addEventListener("change",e=>{ if(!e.target.classList||!e.target.classList.contains("date-in"))return; const iso=parseDMY(e.target.value); if(iso)e.target.value=fmt(iso); });
 
+/* ---------- printed materials: dropdown with checkboxes (several can be chosen) ---------- */
+function updateMatBtn(){
+  const v=[...$("f_mat").querySelectorAll("input:checked")].map(i=>i.value), b=$("f_matBtn");
+  b.textContent=v.length?v.join(", "):"— Ընտրել —"; b.classList.toggle("ph",!v.length);
+}
+function closeMat(){$("f_mat").hidden=true; $("f_matBtn").setAttribute("aria-expanded","false")}
+$("f_matBtn").addEventListener("click",()=>{const p=$("f_mat"); p.hidden=!p.hidden; $("f_matBtn").setAttribute("aria-expanded",String(!p.hidden)); if(!p.hidden){const f=p.querySelector("input"); if(f)f.focus();}});
+$("f_mat").addEventListener("change",updateMatBtn);
+document.addEventListener("click",e=>{ if(!$("f_mat").hidden&&!(e.target.closest&&e.target.closest(".msel-wrap")))closeMat(); });
+
 /* ---------- form ---------- */
 const F={name:"f_name",start:"f_start",end:"f_end",time:"f_time",regDate:"f_reg",org:"f_org",format:"f_format",location:"f_location",responsible:"f_resp",audience:"f_aud",notes:"f_notes"};
 function openForm(id){
@@ -259,11 +269,12 @@ function openForm(id){
   const ro=!!id&&!mayEdit(ev);
   for(const el of Object.values(F))$(el).disabled=ro;
   $("f_mat").querySelectorAll("input").forEach(i=>i.disabled=ro);
+  $("f_matBtn").disabled=ro; closeMat(); updateMatBtn();
   $("saveBtn").hidden=ro; $("cancelBtn").textContent=ro?"Փակել":"Չեղարկել";
   $("formTitle").textContent=!id?"Նոր միջոցառում":ro?"Միջոցառում":"Խմբագրել";
   $("delBtn").hidden=!id||(mode==="db"&&!canEdit); $("confirmBox").hidden=true; $("overlay").hidden=false; $("f_name").focus();
 }
-function closeForm(){closeDP(); $("overlay").hidden=true; editingId=null}
+function closeForm(){closeDP(); closeMat(); $("overlay").hidden=true; editingId=null}
 $("form").addEventListener("submit",async ev=>{
   ev.preventDefault();
   const o={}; for(const [k,el] of Object.entries(F))o[k]=$(el).value.trim();
@@ -280,7 +291,7 @@ $("noDel").onclick=()=>$("confirmBox").hidden=true;
 $("yesDel").onclick=async()=>{if(mode==="db"&&!canEdit)return;try{await removeEvent(editingId); closeForm(); toast("Ջնջված է")}catch(e){toast("Չհաջողվեց ջնջել")}};
 $("closeBtn").onclick=$("cancelBtn").onclick=closeForm;
 $("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeForm()});
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return; if(dp){closeDP();return} if(!$("overlay").hidden)closeForm(); else if(!$("listsOverlay").hidden)$("listsOverlay").hidden=true;});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return; if(dp){closeDP();return} if(!$("f_mat").hidden){closeMat();$("f_matBtn").focus();return} if(!$("overlay").hidden)closeForm(); else if(!$("listsOverlay").hidden)$("listsOverlay").hidden=true;});
 $("addBtn").onclick=()=>openForm();
 $("list").addEventListener("click",e=>{const b=e.target.closest(".ev"); if(b)openForm(b.dataset.id)});
 $("q").addEventListener("input",render); $("person").addEventListener("change",render);

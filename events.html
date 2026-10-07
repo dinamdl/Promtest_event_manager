@@ -54,8 +54,8 @@
       <label>Վայր<input id="f_location" autocomplete="off" placeholder="Գրեք վայրը"></label>
       <label>Պատասխանատու<select id="f_resp"></select></label>
     </div>
-    <label>Թիրախային լսարան<textarea id="f_aud" rows="2"></textarea></label>
-    <div class="field" role="group" aria-labelledby="matLbl"><span id="matLbl">Տպագրական նյութեր</span><div id="f_mat" class="checks"></div></div>
+    <label>Թիրախային լսարան<textarea id="f_aud" rows="1"></textarea></label>
+    <div class="field msel-wrap"><span id="matLbl">Տպագրական նյութեր</span><button type="button" id="f_matBtn" class="msel-btn ph" aria-haspopup="true" aria-expanded="false" aria-labelledby="matLbl f_matBtn">— Ընտրել —</button><div id="f_mat" class="checks msel-pop" role="group" aria-labelledby="matLbl" hidden></div></div>
     <label>Նշումներ<textarea id="f_notes" rows="3"></textarea></label>
     <div id="confirmBox" class="confirm" hidden>Ջնջե՞լ այս միջոցառումը։ <button type="button" id="yesDel" class="danger">Այո, ջնջել</button><button type="button" id="noDel">Չեղարկել</button></div>
     <div class="row">

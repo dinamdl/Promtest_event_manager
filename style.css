@@ -126,3 +126,14 @@ select option{color:var(--ink)}
 .dp-d.sel{background:var(--accent);color:var(--accent-ink)}
 .dp-f{display:flex;justify-content:space-between;margin-top:8px}
 .dp-f button{font-size:12.5px;padding:5px 10px}
+
+/* ---------- compact audience field + materials dropdown ---------- */
+#f_aud{min-height:38px;resize:vertical}
+.msel-wrap{position:relative}
+.msel-btn{width:100%;text-align:left;font-size:14px;padding:8px 30px 8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);letter-spacing:0;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msel-btn::after{content:"";position:absolute;right:12px;top:50%;width:7px;height:7px;border-right:1.6px solid var(--muted);border-bottom:1.6px solid var(--muted);transform:translateY(-70%) rotate(45deg)}
+.msel-btn.ph{color:var(--muted)}
+.msel-btn:disabled{opacity:.7;cursor:default}
+.msel-pop{position:absolute;top:100%;left:0;right:0;z-index:30;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgb(20 10 40 / .22);padding:6px;display:grid;gap:2px}
+.msel-pop .check{padding:8px 10px;border-radius:6px}
+.msel-pop .check:hover{background:var(--accent-soft)}
