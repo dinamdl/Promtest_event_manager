@@ -61,7 +61,7 @@ function mergeSeedLists(){ // names newly added to SEED_LISTS (data.js) join lis
   for(const [k] of LIST_DEFS)for(const v of seed[k]||[]){ if(!(prev[k]||[]).includes(v)&&!(lists[k]||[]).includes(v)){(lists[k]=lists[k]||[]).push(v);changed=true} }
   try{ if(changed)localStorage.setItem(LISTS_KEY,JSON.stringify(lists)); localStorage.setItem(LISTS_KEY+"-seed",JSON.stringify(seed)) }catch(e){}
 }
-function useLocal(){try{lists=JSON.parse(localStorage.getItem(LISTS_KEY)||"null")}catch(e){lists=null} mergeSeedLists(); mode="local"; events=loadLocal(); if(!events.length&&window.SEED_EVENTS){events=window.SEED_EVENTS.map(e=>({...e})); saveLocal();} applyPerms(); render();}
+function useLocal(){try{lists=JSON.parse(localStorage.getItem(LISTS_KEY)||"null")}catch(e){lists=null} mergeSeedLists(); mode="local"; events=loadLocal(); if(!events.length&&window.SEED_EVENTS){events=window.SEED_EVENTS.map(e=>({...e})); saveLocal();} if(events.some(e=>e.responsible==="Diana B.")){events.forEach(e=>{if(e.responsible==="Diana B.")e.responsible="Դիանա Բեգլարյան"}); saveLocal();} applyPerms(); render();}
 async function init(){
   render();
   if(!window.claude||!window.claude.use){useLocal();return}
@@ -146,16 +146,16 @@ function card(e){
     <span class="state ${st}">${label}</span></button>`;
 }
 function fillLists(){
-  const map={dl_format:"format",dl_location:"location"};
+  const map={dl_location:"location"};
   for(const [id,f] of Object.entries(map)){$(id).innerHTML=[...new Set(events.map(e=>e[f]).filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join("")}
 }
 
 /* ---------- choice lists: organizations, responsible people, printed materials ---------- */
 const LISTS_KEY="promtest-lists-v1";
-const LIST_DEFS=[["orgs","Կազմակերպություններ","org"],["people","Պատասխանատուներ","responsible"],["materials","Տպագրական նյութեր","materials"]];
-const DEFAULT_LISTS=window.SEED_LISTS||{orgs:["Prom-Test"],people:["Diana B.","Աննա Աբազյան","Աննա Շագրիյան"],materials:["Roll-up","Բուկլետ","Թռուցիկ","Պաստառ"]};
+const LIST_DEFS=[["formats","Ներկայացման ձևաչափեր","format"],["orgs","Կազմակերպություններ","org"],["people","Պատասխանատուներ","responsible"],["materials","Տպագրական նյութեր","materials"]];
+const DEFAULT_LISTS=window.SEED_LISTS||{formats:["Հովանավոր"],orgs:["Prom-Test"],people:["Diana B.","Աննա Աբազյան","Աննա Շագրիյան"],materials:["Roll-up","Բուկլետ","Թռուցիկ","Պաստառ"]};
 let lists=null, cfgRef=null;
-function L(k){return lists&&Array.isArray(lists[k])?lists[k]:DEFAULT_LISTS[k]}
+function L(k){return lists&&Array.isArray(lists[k])?lists[k]:(DEFAULT_LISTS[k]||[])}
 function splitMat(s){return String(s||"").split(/\s*[,;]\s*/).map(x=>x.trim()).filter(Boolean)}
 function allLists(){const o={};LIST_DEFS.forEach(([k])=>o[k]=[...L(k)]);return o}
 async function saveLists(next){
@@ -164,7 +164,7 @@ async function saveLists(next){
 }
 function fillSelect(id,arr,cur){
   const opts=[...arr]; if(cur&&!opts.includes(cur))opts.unshift(cur);
-  $(id).innerHTML='<option value="">— ընտրել —</option>'+opts.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
+  $(id).innerHTML=`<option value="" disabled hidden${cur?"":" selected"}>— Ընտրել —</option>`+opts.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
 }
 function fillChecks(val){
   const cur=splitMat(val), base=L("materials"), opts=[...base,...cur.filter(x=>!base.includes(x))];
@@ -204,9 +204,9 @@ $("harvestBtn").onclick=async()=>{
 /* ---------- form ---------- */
 const F={name:"f_name",start:"f_start",end:"f_end",time:"f_time",regDate:"f_reg",org:"f_org",format:"f_format",location:"f_location",responsible:"f_resp",audience:"f_aud",notes:"f_notes"};
 function openForm(id){
-  editingId=id||null; const ev=events.find(e=>e.id===id)||{org:"Prom-Test",format:"Հովանավոր",regDate:new Date().toISOString().slice(0,10)};
-  fillSelect("f_org",L("orgs"),ev.org||""); fillSelect("f_resp",L("people"),ev.responsible||""); fillChecks(ev.materials);
-  for(const [k,el] of Object.entries(F))$(el).value=ev[k]||"";
+  editingId=id||null; const ev=events.find(e=>e.id===id)||{regDate:new Date().toISOString().slice(0,10)};
+  fillSelect("f_format",L("formats"),ev.format||""); fillSelect("f_org",L("orgs"),ev.org||""); fillSelect("f_resp",L("people"),ev.responsible||""); fillChecks(ev.materials);
+  for(const [k,el] of Object.entries(F))if(k!=="org"&&k!=="responsible"&&k!=="format")$(el).value=ev[k]||"";
   const ro=!!id&&!mayEdit(ev);
   for(const el of Object.values(F))$(el).disabled=ro;
   $("f_mat").querySelectorAll("input").forEach(i=>i.disabled=ro);

@@ -10,7 +10,7 @@ window.SEED_EVENTS = [
     "org": "Prom-Test",
     "format": "Հովանավոր",
     "location": "Red Bridge Hotel",
-    "responsible": "Diana B.",
+    "responsible": "Դիանա Բեգլարյան",
     "audience": "Family doctors, therapists, rheumatologists, gastroenterologists, endocrinologists, cardiologists",
     "materials": "Roll-up",
     "notes": ""
@@ -25,7 +25,7 @@ window.SEED_EVENTS = [
     "org": "Prom-Test",
     "format": "Հովանավոր",
     "location": "Radisson Blu Hotel",
-    "responsible": "Diana B.",
+    "responsible": "Դիանա Բեգլարյան",
     "audience": "Gynecologists, reproductive specialists",
     "materials": "Roll-up",
     "notes": ""
@@ -40,7 +40,7 @@ window.SEED_EVENTS = [
     "org": "Prom-Test",
     "format": "Հովանավոր",
     "location": "Ibis Hotel",
-    "responsible": "Diana B.",
+    "responsible": "Դիանա Բեգլարյան",
     "audience": "Pregnant women",
     "materials": "Roll-up",
     "notes": ""
@@ -55,7 +55,7 @@ window.SEED_EVENTS = [
     "org": "Prom-Test",
     "format": "Հովանավոր",
     "location": "Courtyard Marriott",
-    "responsible": "Diana B.",
+    "responsible": "Դիանա Բեգլարյան",
     "audience": "Gynecologists, reproductive specialists",
     "materials": "Roll-up",
     "notes": ""
@@ -70,7 +70,7 @@ window.SEED_EVENTS = [
     "org": "Prom-Test",
     "format": "Հովանավոր",
     "location": "Armenia Marriott",
-    "responsible": "Diana B.",
+    "responsible": "Դիանա Բեգլարյան",
     "audience": "Allergists",
     "materials": "Roll-up",
     "notes": ""
@@ -85,7 +85,7 @@ window.SEED_EVENTS = [
     "org": "Prom-Test",
     "format": "Հովանավոր",
     "location": "Red Bridge Hotel",
-    "responsible": "Diana B.",
+    "responsible": "Դիանա Բեգլարյան",
     "audience": "",
     "materials": "",
     "notes": ""
@@ -95,13 +95,25 @@ window.SEED_EVENTS = [
 // Ընտրության ցուցակներ։ Նոր անուն ավելացնելու համար գրեք այստեղ, պահպանեք և թարմացրեք էջը (Ctrl+F5)։
 // Կարելի է նաև ավելացնել էջի «Ցուցակներ» կոճակով։
 window.SEED_LISTS = {
+  formats: [
+    "Գլխավոր հովանավոր",
+    "Հովանավոր",
+    "Մասնակից",
+    "Գործընկեր",
+    "Բանախոս"
+  ],
   orgs: [
-    "Prom-Test"
+    "Prom-Test",
+    "Diagnostica",
+    "AMTC",
+    "PetCT",
+    "Proftest"
   ],
   people: [
-    "Diana B.",
     "Աննա Աբազյան",
-    "Աննա Շագրիյան"
+    "Աննա Շագրիյան",
+    "Ասյա Սարգսյան",
+    "Դիանա Բեգլարյան"
   ],
   materials: [
     "Roll-up",

@@ -3,83 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Prom-Test միջոցառումներ</title>
+<title>Պրոմ-Տեստ Լաբորատորիաներ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;500;600;700&family=Noto+Serif+Armenian:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="wrap">
-  <header>
-    <div>
-      <div class="mode" id="mode">Բեռնվում է…</div>
-      <h1>Prom-Test միջոցառումներ</h1>
-      <p class="sub">Հովանավորվող կոնֆերանսներ, պատասխանատուներ և տպագրական նյութեր</p>
-    </div>
-    <div class="actions">
-      <button id="listsBtn" type="button">Ցուցակներ</button>
-      <button id="importBtn" type="button">Ներմուծել CSV</button>
-      <button id="exportBtn" type="button">Արտահանել CSV</button>
-      <button id="addBtn" class="primary" type="button">+ Նոր միջոցառում</button>
-      <input id="fileIn" type="file" accept=".csv,text/csv" hidden>
-    </div>
-  </header>
-
-  <section class="summary" id="summary" aria-label="Ամփոփում"></section>
-
-  <div class="toolbar">
-    <input id="q" type="search" placeholder="Որոնել՝ անվանում, վայր, լսարան…" aria-label="Որոնում">
-    <div class="seg" role="group" aria-label="Կարգավիճակ">
-      <button type="button" data-f="upcoming" aria-pressed="true">Առաջիկա</button>
-      <button type="button" data-f="past" aria-pressed="false">Անցած</button>
-      <button type="button" data-f="all" aria-pressed="false">Բոլորը</button>
-    </div>
-    <select id="person" aria-label="Պատասխանատու"><option value="">Բոլոր պատասխանատուները</option></select>
+<main class="start">
+  <div class="start-card">
+    <div class="logo-box"><img src="logo.png" alt="Prom-Test Laboratories" width="790" height="265"></div>
+    <div class="lab">Պրոմ-Տեստ Լաբորատորիաներ</div>
+    <div class="rule"></div>
+    <div class="mode">Տվյալները պահվում են այս բրաուզերում</div>
+    <h1>Միջոցառումներ</h1>
+    <p class="sub">Հովանավորվող կոնֆերանսներ, պատասխանատուներ և տպագրական նյութեր</p>
+    <div class="start-stats" id="stats" hidden></div>
+    <a class="btn primary enter" href="events.html">Բացել միջոցառումները →</a>
   </div>
-
-  <main id="list"></main>
-</div>
-
-<div class="overlay" id="overlay" hidden>
-  <form class="panel" id="form" novalidate>
-    <div class="row"><h3 id="formTitle">Նոր միջոցառում</h3><button type="button" id="closeBtn" aria-label="Փակել">✕</button></div>
-    <label>Միջոցառման անվանում *<input id="f_name" required></label>
-    <div class="grid2">
-      <label>Սկիզբ *<input id="f_start" type="date" required></label>
-      <label>Ավարտ (եթե մի քանի օր է)<input id="f_end" type="date"></label>
-      <label>Ժամ<input id="f_time" placeholder="օր.՝ 10:00"></label>
-      <label>Գրանցման ամսաթիվ<input id="f_reg" type="date"></label>
-      <label>Կազմակերպություն<select id="f_org"></select></label>
-      <label>Ներկայացման ձևաչափ<input id="f_format" list="dl_format" placeholder="Հովանավոր"></label>
-      <label>Վայր<input id="f_location" list="dl_location"></label>
-      <label>Պատասխանատու<select id="f_resp">
-       
-      </select></label>
-    </div>
-    <label>Թիրախային լսարան<textarea id="f_aud" rows="2"></textarea></label>
-    <div class="field" role="group" aria-labelledby="matLbl"><span id="matLbl">Տպագրական նյութեր</span><div id="f_mat" class="checks"></div></div>
-    <label>Նշումներ<textarea id="f_notes" rows="3"></textarea></label>
-    <datalist id="dl_format"></datalist><datalist id="dl_location"></datalist>
-    <div id="confirmBox" class="confirm" hidden>Ջնջե՞լ այս միջոցառումը։ <button type="button" id="yesDel" class="danger">Այո, ջնջել</button><button type="button" id="noDel">Չեղարկել</button></div>
-    <div class="row">
-      <button type="button" id="delBtn" class="danger" hidden>Ջնջել</button>
-      <span></span>
-      <div class="actions"><button type="button" id="cancelBtn">Չեղարկել</button><button type="submit" id="saveBtn" class="primary">Պահպանել</button></div>
-    </div>
-  </form>
-</div>
-<div class="overlay" id="listsOverlay" hidden>
-  <div class="panel" role="dialog" aria-labelledby="listsTitle">
-    <div class="row"><h3 id="listsTitle">Ցուցակներ</h3><button type="button" id="listsClose" aria-label="Փակել">✕</button></div>
-    <p class="hint">Այս անունները հայտնվում են միջոցառման ձևում՝ ընտրելու համար։ Փոփոխությունները պահպանվում են անմիջապես։</p>
-    <div id="listsBody" style="display:grid;gap:16px"></div>
-    <button type="button" id="harvestBtn">Ավելացնել միջոցառումներում արդեն օգտագործված անունները</button>
-  </div>
-</div>
-<div class="toast" id="toast" hidden></div>
-
+</main>
 <script src="data.js"></script>
-<script src="app.js"></script>
+<script>
+(function(){
+  var ev=[]; try{ev=JSON.parse(localStorage.getItem("promtest-events-v1")||"[]")}catch(e){}
+  if(!ev.length&&window.SEED_EVENTS)ev=window.SEED_EVENTS;
+  if(!ev.length)return;
+  var t=new Date(); t.setHours(0,0,0,0);
+  var day=function(s){var p=String(s||"").split("-");return p.length===3?new Date(+p[0],p[1]-1,+p[2]):null};
+  var up=ev.filter(function(e){var x=day(e.end)||day(e.start);return x&&x>=t}).sort(function(a,b){return (a.start||"").localeCompare(b.start||"")});
+  var box=document.getElementById("stats");
+  box.innerHTML='<div><b>'+ev.length+'</b>Ընդհանուր</div><div><b>'+up.length+'</b>Առաջիկա</div>';
+  if(up[0]){var s=document.createElement("div");var b=document.createElement("b");b.textContent=up[0].name;b.style.fontSize="15px";s.appendChild(b);s.appendChild(document.createTextNode("Հաջորդը"));box.appendChild(s);}
+  box.hidden=false;
+})();
+</script>
 </body>
 </html>
