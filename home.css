@@ -1,0 +1,69 @@
+/* Start page — Prom-Test brand: a purple chevron band echoing the logo's arrow, a grey dot field echoing its dotted star */
+.home{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;background:var(--bg);position:relative;overflow:hidden}
+.home::before{ /* dot field, low on the left (from the logo's dotted star) */
+  content:"";position:absolute;bottom:40px;left:-30px;width:min(560px,80vw);height:360px;pointer-events:none;
+  background-image:radial-gradient(circle,var(--dot) 1.5px,transparent 1.7px);background-size:14px 14px;
+  -webkit-mask-image:radial-gradient(ellipse at 25% 75%,#000 20%,transparent 68%);mask-image:radial-gradient(ellipse at 25% 75%,#000 20%,transparent 68%)}
+.globe{ /* globe from the logo, faint, top right */
+  position:absolute;top:-110px;right:-90px;width:min(560px,80vw);height:auto;color:var(--accent);opacity:.12;pointer-events:none}
+@media (max-width:600px){.globe{top:-70px;right:-110px;width:340px;opacity:.10}}
+.home::after{ /* chevron band, left edge */
+  content:"";position:absolute;left:0;top:0;bottom:0;width:10px;background:var(--accent)}
+:root{--dot:#d6d1de}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--dot:#3a3446}}
+:root[data-theme="dark"]{--dot:#3a3446}
+
+.topbar{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  max-width:1120px;width:100%;margin:0 auto;padding-inline:28px;padding-block:20px}
+.brandmark{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--ink);min-width:0}
+.brandmark .chip-logo{background:#ffffff;border-radius:8px;padding:6px 10px;box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line)}
+.brandmark img{display:block;height:40px;width:auto}
+.storage{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.storage::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok)}
+
+.hero{position:relative;z-index:1;max-width:1120px;width:100%;margin:0 auto;padding-inline:28px;padding-block:24px 48px;
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:48px;align-items:center}
+@media (max-width:860px){.hero{grid-template-columns:1fr;gap:32px;padding-block:8px 40px}}
+.hero-copy{display:grid;gap:18px;min-width:0}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--accent)}
+.eyebrow::before{content:"";width:28px;height:3px;background:var(--accent);border-radius:2px}
+.hero h1{font-family:var(--f-display);font-weight:800;font-size:clamp(38px,5.4vw,62px);line-height:1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.hero .lead{font-size:clamp(16px,1.6vw,19px);color:var(--muted);margin:0;max-width:44ch;line-height:1.55}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.cta a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:15.5px;font-weight:600;padding:13px 22px;border-radius:10px;border:1px solid var(--line);color:var(--ink);background:var(--surface)}
+.cta a.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.cta a:hover{border-color:var(--ink)}
+.cta a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.figures{display:flex;flex-wrap:wrap;gap:28px;margin-top:10px;padding-top:18px;border-top:1px solid var(--line)}
+.figures div{font-size:13px;color:var(--muted)}
+.figures b{display:block;font-size:30px;line-height:1.1;color:var(--ink);font-variant-numeric:tabular-nums;font-weight:800}
+
+/* upcoming card */
+.upcoming{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 48px rgb(60 30 100 / .10);overflow:hidden;min-width:0}
+.upcoming header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+.upcoming h2{margin:0;font-size:16px;font-weight:700}
+.upcoming header a{font-size:13px;color:var(--accent);text-decoration:none;font-weight:600}
+.upcoming header a:hover{text-decoration:underline}
+.up-list{list-style:none;margin:0;padding:0}
+.up-list li{display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.up-list li:last-child{border-bottom:0}
+.up-date{background:var(--accent-soft);color:var(--accent);border-radius:10px;text-align:center;padding:6px 0}
+.up-date b{display:block;font-size:20px;line-height:1.1;font-variant-numeric:tabular-nums}
+.up-date span{font-size:11.5px}
+.up-body{min-width:0;display:grid;gap:2px}
+.up-name{font-weight:600;font-size:14.5px;line-height:1.35;overflow-wrap:anywhere}
+.up-meta{font-size:12.5px;color:var(--muted)}
+.up-when{font-size:12px;font-weight:600;color:var(--accent)}
+.up-empty{padding:28px 20px;color:var(--muted);font-size:14px;text-align:center}
+
+/* organizations strip */
+.orgs{position:relative;z-index:1;border-top:1px solid var(--line);background:var(--surface)}
+.orgs-in{max-width:1120px;margin:0 auto;padding-inline:28px;padding-block:18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px}
+.orgs-in > span{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.orgs-in ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.orgs-in li{font-weight:700;font-size:14px;color:var(--ink);padding:5px 12px;border-radius:999px;border:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){
+  .hero-copy,.upcoming{animation:rise .5s ease-out both}
+  .upcoming{animation-delay:.08s}
+  @keyframes rise{from{transform:translateY(8px)}to{transform:none}}
+}

@@ -49,7 +49,6 @@ async function resolveNames(){
 function applyPerms(){
   const db=mode==="db";
   $("addBtn").hidden=db&&(!canWrite||(!canEdit&&!me));
-  $("importBtn").hidden=db&&!canEdit;
   $("listsBtn").hidden=db&&!canEdit;
   $("mode").textContent=!db?"Տվյալները պահվում են այս բրաուզերում":
     canEdit?"Ընդհանուր տվյալներ · դուք ունեք լիարժեք իրավունք":
@@ -61,7 +60,7 @@ function mergeSeedLists(){ // names newly added to SEED_LISTS (data.js) join lis
   for(const [k] of LIST_DEFS)for(const v of seed[k]||[]){ if(!(prev[k]||[]).includes(v)&&!(lists[k]||[]).includes(v)){(lists[k]=lists[k]||[]).push(v);changed=true} }
   try{ if(changed)localStorage.setItem(LISTS_KEY,JSON.stringify(lists)); localStorage.setItem(LISTS_KEY+"-seed",JSON.stringify(seed)) }catch(e){}
 }
-function useLocal(){try{lists=JSON.parse(localStorage.getItem(LISTS_KEY)||"null")}catch(e){lists=null} mergeSeedLists(); mode="local"; events=loadLocal(); if(!events.length&&window.SEED_EVENTS){events=window.SEED_EVENTS.map(e=>({...e})); saveLocal();} if(events.some(e=>e.responsible==="Diana B.")){events.forEach(e=>{if(e.responsible==="Diana B.")e.responsible="Դիանա Բեգլարյան"}); saveLocal();} applyPerms(); render();}
+function useLocal(){try{lists=JSON.parse(localStorage.getItem(LISTS_KEY)||"null")}catch(e){lists=null} mergeSeedLists(); mode="local"; events=loadLocal(); if(!events.length&&window.SEED_EVENTS){events=window.SEED_EVENTS.map(e=>({...e})); saveLocal();} if(events.some(e=>e.responsible==="Diana B.")){events.forEach(e=>{if(e.responsible==="Diana B.")e.responsible="Դիանա Բեգլարյան"}); saveLocal();} applyPerms(); render(); if(location.hash==="#new"){try{history.replaceState(null,"",location.pathname)}catch(e){} openForm();}}
 async function init(){
   render();
   if(!window.claude||!window.claude.use){useLocal();return}
@@ -114,13 +113,17 @@ function render(){
     if(person&&e.responsible!==person)return false;
     if(q&&![e.name,e.location,e.audience,e.org,e.format,e.materials,e.notes].join(" ").toLowerCase().includes(q))return false;
     return true;});
-  rows.sort((a,b)=>(a.start||"").localeCompare(b.start||"")*(filter==="past"?-1:1));
+  if(filter==="all"){ // this month and later first (ascending), then earlier months from newest to oldest
+    const curM=isoOf(TODAY).slice(0,7);
+    rows.sort((a,b)=>{const ma=(a.start||"").slice(0,7), mb=(b.start||"").slice(0,7), ra=ma>=curM?0:1, rb=mb>=curM?0:1;
+      if(ra!==rb)return ra-rb; if(ma!==mb)return ra===0?ma.localeCompare(mb):mb.localeCompare(ma); return (a.start||"").localeCompare(b.start||"");});
+  } else rows.sort((a,b)=>(a.start||"").localeCompare(b.start||"")*(filter==="past"?-1:1));
 
   const list=$("list");
   if(mode==="loading"){list.innerHTML='<div class="empty">Բեռնվում է…</div>';return}
   if(!events.length){list.innerHTML=`<div class="empty"><strong>Միջոցառումներ դեռ չկան</strong>
-    Ավելացրեք առաջինը կամ ներմուծեք Google Sheets-ից՝ File → Download → CSV։
-    <div class="actions">${$("addBtn").hidden?"":'<button type="button" class="primary" onclick="openForm()">+ Նոր միջոցառում</button>'}${$("importBtn").hidden?"":'<button type="button" onclick="$(\'fileIn\').click()">Ներմուծել CSV</button>'}</div></div>`;return}
+    Ավելացրեք առաջինը՝ «+ Նոր միջոցառում» կոճակով։
+    <div class="actions">${$("addBtn").hidden?"":'<button type="button" class="primary" onclick="openForm()">+ Նոր միջոցառում</button>'}</div></div>`;return}
   if(!rows.length){list.innerHTML='<div class="empty"><strong>Համընկնումներ չկան</strong>Փոխեք որոնումը կամ ֆիլտրը։</div>';return}
 
   const groups={};
@@ -146,7 +149,7 @@ function card(e){
     <span class="state ${st}">${label}</span></button>`;
 }
 function fillLists(){
-  const map={dl_location:"location"};
+  const map={};
   for(const [id,f] of Object.entries(map)){$(id).innerHTML=[...new Set(events.map(e=>e[f]).filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join("")}
 }
 
@@ -201,12 +204,58 @@ $("harvestBtn").onclick=async()=>{
   try{await saveLists(next); toast("Ավելացվեց "+n+" անուն")}catch(err){toast("Չհաջողվեց պահպանել")}
 };
 
+/* ---------- date picker: day.month.year with an Armenian calendar ---------- */
+const DATE_KEYS=["start","end","regDate"];
+const WD=["Երկ","Երք","Չրք","Հնգ","Ուրբ","Շբթ","Կիր"];
+function isoOf(x){return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
+function parseDMY(s){
+  s=String(s||"").trim(); if(!s)return "";
+  const m=s.match(/^(\d{1,2})[.\/\-\s](\d{1,2})[.\/\-\s](\d{4})$/); if(!m)return null;
+  const dd=+m[1],mo=+m[2],y=+m[3],x=new Date(y,mo-1,dd);
+  return x.getFullYear()===y&&x.getMonth()===mo-1&&x.getDate()===dd?isoOf(x):null;
+}
+let dp=null;
+function openDP(input){
+  if(input.disabled)return; if(dp&&dp.input===input)return; closeDP();
+  const iso=parseDMY(input.value), base=iso?d(iso):new Date();
+  dp={input,y:base.getFullYear(),m:base.getMonth()};
+  const pop=document.createElement("div"); pop.className="dp"; pop.id="dp"; pop.setAttribute("role","dialog"); pop.setAttribute("aria-label","Օրացույց");
+  input.parentNode.appendChild(pop); renderDP();
+}
+function closeDP(){const p=$("dp"); if(p)p.remove(); dp=null}
+function renderDP(){
+  const pop=$("dp"); if(!pop||!dp)return;
+  const sel=parseDMY(dp.input.value), today=isoOf(TODAY);
+  const offset=(new Date(dp.y,dp.m,1).getDay()+6)%7, days=new Date(dp.y,dp.m+1,0).getDate();
+  let cells=""; for(let i=0;i<offset;i++)cells+="<span></span>";
+  for(let n=1;n<=days;n++){const iso=isoOf(new Date(dp.y,dp.m,n));
+    cells+=`<button type="button" class="dp-d${iso===sel?" sel":""}${iso===today?" today":""}" data-iso="${iso}">${n}</button>`}
+  pop.innerHTML=`<div class="dp-h"><button type="button" class="dp-nav" data-nav="-1" aria-label="Նախորդ ամիս">‹</button><b>${MONTHS[dp.m]} ${dp.y}</b><button type="button" class="dp-nav" data-nav="1" aria-label="Հաջորդ ամիս">›</button></div>
+    <div class="dp-g">${WD.map(w=>`<i>${w}</i>`).join("")}${cells}</div>
+    <div class="dp-f"><button type="button" data-act="today">Այսօր</button><button type="button" data-act="clear">Մաքրել</button></div>`;
+}
+document.addEventListener("focusin",e=>{if(e.target.classList&&e.target.classList.contains("date-in"))openDP(e.target)});
+document.addEventListener("click",e=>{
+  const inp=e.target.closest&&e.target.closest(".date-in"); if(inp){openDP(inp);return}
+  const b=e.target.closest&&e.target.closest(".dp button");
+  if(!b){ if(dp&&!e.target.closest(".dp"))closeDP(); return }
+  e.preventDefault();
+  if(b.dataset.nav){dp.m+=+b.dataset.nav; if(dp.m<0){dp.m=11;dp.y--} if(dp.m>11){dp.m=0;dp.y++} renderDP(); return}
+  const input=dp.input;
+  if(b.dataset.iso)input.value=fmt(b.dataset.iso);
+  else if(b.dataset.act==="today")input.value=fmt(isoOf(TODAY));
+  else if(b.dataset.act==="clear")input.value="";
+  closeDP(); input.focus(); closeDP();
+});
+document.addEventListener("input",e=>{ if(!dp||e.target!==dp.input)return; const iso=parseDMY(e.target.value); if(iso){const x=d(iso);dp.y=x.getFullYear();dp.m=x.getMonth();renderDP()} });
+document.addEventListener("change",e=>{ if(!e.target.classList||!e.target.classList.contains("date-in"))return; const iso=parseDMY(e.target.value); if(iso)e.target.value=fmt(iso); });
+
 /* ---------- form ---------- */
 const F={name:"f_name",start:"f_start",end:"f_end",time:"f_time",regDate:"f_reg",org:"f_org",format:"f_format",location:"f_location",responsible:"f_resp",audience:"f_aud",notes:"f_notes"};
 function openForm(id){
   editingId=id||null; const ev=events.find(e=>e.id===id)||{regDate:new Date().toISOString().slice(0,10)};
   fillSelect("f_format",L("formats"),ev.format||""); fillSelect("f_org",L("orgs"),ev.org||""); fillSelect("f_resp",L("people"),ev.responsible||""); fillChecks(ev.materials);
-  for(const [k,el] of Object.entries(F))if(k!=="org"&&k!=="responsible"&&k!=="format")$(el).value=ev[k]||"";
+  for(const [k,el] of Object.entries(F))if(k!=="org"&&k!=="responsible"&&k!=="format")$(el).value=DATE_KEYS.includes(k)?fmt(ev[k]):(ev[k]||"");
   const ro=!!id&&!mayEdit(ev);
   for(const el of Object.values(F))$(el).disabled=ro;
   $("f_mat").querySelectorAll("input").forEach(i=>i.disabled=ro);
@@ -214,10 +263,11 @@ function openForm(id){
   $("formTitle").textContent=!id?"Նոր միջոցառում":ro?"Միջոցառում":"Խմբագրել";
   $("delBtn").hidden=!id||(mode==="db"&&!canEdit); $("confirmBox").hidden=true; $("overlay").hidden=false; $("f_name").focus();
 }
-function closeForm(){$("overlay").hidden=true; editingId=null}
+function closeForm(){closeDP(); $("overlay").hidden=true; editingId=null}
 $("form").addEventListener("submit",async ev=>{
   ev.preventDefault();
   const o={}; for(const [k,el] of Object.entries(F))o[k]=$(el).value.trim();
+  for(const k of DATE_KEYS){const v=parseDMY(o[k]); if(v===null){toast("Ամսաթիվը գրեք օր.ամիս.տարի ձևով, օր.՝ 25.10.2026");$(F[k]).focus();return} o[k]=v;}
   o.materials=[...$("f_mat").querySelectorAll("input:checked")].map(i=>i.value).join(", ");
   if(!o.name||!o.start){toast("Լրացրեք անվանումը և սկզբի ամսաթիվը։");return}
   if(o.end&&o.end<o.start){toast("Ավարտը չի կարող լինել սկզբից շուտ։");return}
@@ -230,34 +280,14 @@ $("noDel").onclick=()=>$("confirmBox").hidden=true;
 $("yesDel").onclick=async()=>{if(mode==="db"&&!canEdit)return;try{await removeEvent(editingId); closeForm(); toast("Ջնջված է")}catch(e){toast("Չհաջողվեց ջնջել")}};
 $("closeBtn").onclick=$("cancelBtn").onclick=closeForm;
 $("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeForm()});
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return; if(!$("overlay").hidden)closeForm(); else if(!$("listsOverlay").hidden)$("listsOverlay").hidden=true;});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return; if(dp){closeDP();return} if(!$("overlay").hidden)closeForm(); else if(!$("listsOverlay").hidden)$("listsOverlay").hidden=true;});
 $("addBtn").onclick=()=>openForm();
 $("list").addEventListener("click",e=>{const b=e.target.closest(".ev"); if(b)openForm(b.dataset.id)});
 $("q").addEventListener("input",render); $("person").addEventListener("change",render);
 document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));render()});
 
-/* ---------- CSV import / export (Google Sheets column order) ---------- */
+/* ---------- CSV export (Google Sheets column order) ---------- */
 const COLS=["Գրանցման ամսաթիվ","Միջոցառման ամսաթիվ","Ժամ","Կազմակերպություն","Ներկայացման ձևաչափ","Միջոցառման անվանում","Վայր","Պատասխանատու","Թիրախային լսարան","Տպագրական նյութեր"];
-function parseCSV(t){const rows=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];
-  if(q){if(ch=='"'&&t[i+1]=='"'){c+='"';i++}else if(ch=='"')q=false;else c+=ch}
-  else if(ch=='"')q=true;else if(ch==","){r.push(c);c=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(c);rows.push(r);r=[];c=""}else c+=ch}
-  if(c||r.length){r.push(c);rows.push(r)}return rows}
-function parseDate(s){const m=String(s||"").trim().match(/^(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\.(\d{1,2})\.(\d{4})$/);
-  if(!m)return null; const p=n=>String(n).padStart(2,"0"); return {start:`${m[4]}-${p(m[3])}-${p(m[1])}`,end:m[2]?`${m[4]}-${p(m[3])}-${p(m[2])}`:""}}
-$("importBtn").onclick=()=>$("fileIn").click();
-$("fileIn").onchange=async e=>{
-  const f=e.target.files[0]; if(!f)return; const rows=parseCSV(await f.text()); let n=0,skip=0;
-  for(let r of rows){
-    if(!parseDate(r[1])&&parseDate(r[2]))r=r.slice(1); // leading empty column
-    const ev=parseDate(r[1]); if(!ev||!(r[5]||"").trim()){continue}
-    const name=r[5].trim();
-    if(events.some(x=>x.name===name&&x.start===ev.start)){skip++;continue}
-    const reg=parseDate(r[0]);
-    try{await saveEvent({name,start:ev.start,end:ev.end,regDate:reg?reg.start:"",time:(r[2]||"").trim(),org:(r[3]||"").trim(),format:(r[4]||"").trim(),location:(r[6]||"").trim(),responsible:(r[7]||"").trim(),audience:(r[8]||"").trim(),materials:(r[9]||"").trim(),notes:""});n++}
-    catch(err){toast("Ներմուծումը կանգնեց․ "+(err.code||"սխալ"));break}
-  }
-  e.target.value=""; toast(`Ներմուծվեց ${n} միջոցառում`+(skip?`, ${skip} կրկնօրինակ բաց թողնվեց`:""));
-};
 $("exportBtn").onclick=async()=>{
   const q=v=>/[",\n]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;
   const lines=[COLS.join(",")].concat([...events].sort((a,b)=>(a.start||"").localeCompare(b.start||"")).map(e=>

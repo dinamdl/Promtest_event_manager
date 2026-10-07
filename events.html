@@ -20,10 +20,8 @@
     </div>
     <div class="actions">
       <button id="listsBtn" type="button">Ցուցակներ</button>
-      <button id="importBtn" type="button">Ներմուծել CSV</button>
       <button id="exportBtn" type="button">Արտահանել CSV</button>
       <button id="addBtn" class="primary" type="button">+ Նոր միջոցառում</button>
-      <input id="fileIn" type="file" accept=".csv,text/csv" hidden>
     </div>
   </header>
 
@@ -47,19 +45,18 @@
     <div class="row"><h3 id="formTitle">Նոր միջոցառում</h3><button type="button" id="closeBtn" aria-label="Փակել">✕</button></div>
     <label>Միջոցառման անվանում *<input id="f_name" required></label>
     <div class="grid2">
-      <label>Սկիզբ *<input id="f_start" type="date" required></label>
-      <label>Ավարտ (եթե մի քանի օր է)<input id="f_end" type="date"></label>
+      <label>Սկիզբ *<input id="f_start" class="date-in" placeholder="օր.ամիս.տարի" inputmode="numeric" autocomplete="off" required></label>
+      <label>Ավարտ (եթե մի քանի օր է)<input id="f_end" class="date-in" placeholder="օր.ամիս.տարի" inputmode="numeric" autocomplete="off"></label>
       <label>Ժամ<input id="f_time" placeholder="օր.՝ 10:00"></label>
-      <label>Գրանցման ամսաթիվ<input id="f_reg" type="date"></label>
+      <label>Գրանցման ամսաթիվ<input id="f_reg" class="date-in" placeholder="օր.ամիս.տարի" inputmode="numeric" autocomplete="off"></label>
       <label>Կազմակերպություն<select id="f_org"></select></label>
       <label>Ներկայացման ձևաչափ<select id="f_format"></select></label>
-      <label>Վայր<input id="f_location" list="dl_location"></label>
+      <label>Վայր<input id="f_location" autocomplete="off" placeholder="Գրեք վայրը"></label>
       <label>Պատասխանատու<select id="f_resp"></select></label>
     </div>
     <label>Թիրախային լսարան<textarea id="f_aud" rows="2"></textarea></label>
     <div class="field" role="group" aria-labelledby="matLbl"><span id="matLbl">Տպագրական նյութեր</span><div id="f_mat" class="checks"></div></div>
     <label>Նշումներ<textarea id="f_notes" rows="3"></textarea></label>
-    <datalist id="dl_location"></datalist>
     <div id="confirmBox" class="confirm" hidden>Ջնջե՞լ այս միջոցառումը։ <button type="button" id="yesDel" class="danger">Այո, ջնջել</button><button type="button" id="noDel">Չեղարկել</button></div>
     <div class="row">
       <button type="button" id="delBtn" class="danger" hidden>Ջնջել</button>

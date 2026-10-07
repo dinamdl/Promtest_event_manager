@@ -7,33 +7,95 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="home.css">
 </head>
 <body>
-<main class="start">
-  <div class="start-card">
-    <div class="logo-box"><img src="logo.png" alt="Prom-Test Laboratories" width="790" height="265"></div>
-    <div class="lab">Պրոմ-Տեստ Լաբորատորիաներ</div>
-    <div class="rule"></div>
-    <div class="mode">Տվյալները պահվում են այս բրաուզերում</div>
-    <h1>Միջոցառումներ</h1>
-    <p class="sub">Հովանավորվող կոնֆերանսներ, պատասխանատուներ և տպագրական նյութեր</p>
-    <div class="start-stats" id="stats" hidden></div>
-    <a class="btn primary enter" href="events.html">Բացել միջոցառումները →</a>
+<div class="home">
+  <svg class="globe" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+      <!-- small grid globe in the middle -->
+      <circle cx="210" cy="190" r="62"/>
+      <ellipse cx="210" cy="190" rx="24" ry="62"/>
+      <ellipse cx="210" cy="190" rx="46" ry="62"/>
+      <path d="M150 168 Q210 178 270 168"/>
+      <path d="M148 190 H272"/>
+      <path d="M150 212 Q210 202 270 212"/>
+      <!-- two crossing orbits -->
+      <ellipse cx="200" cy="205" rx="168" ry="50" transform="rotate(-6 200 205)"/>
+      <ellipse cx="200" cy="200" rx="150" ry="56" transform="rotate(38 200 200)"/>
+    </g>
+    <g fill="currentColor">
+      <circle cx="44" cy="190" r="10"/>
+      <circle cx="362" cy="214" r="10"/>
+      <circle cx="285" cy="96" r="12"/>
+      <circle cx="122" cy="300" r="12"/>
+    </g>
+  </svg>
+  <div class="topbar">
+    <a class="brandmark" href="index.html">
+      <span class="chip-logo"><img src="logo.png" alt="Prom-Test Laboratories" width="790" height="265"></span>
+    </a>
+    <div class="storage">Տվյալները պահվում են այս բրաուզերում</div>
   </div>
-</main>
+
+  <main class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">Պրոմ-Տեստ Լաբորատորիաներ</div>
+      <h1>Միջոցառումներ</h1>
+      <p class="lead">Հովանավորվող կոնֆերանսներ, պատասխանատուներ և տպագրական նյութեր</p>
+      <div class="cta">
+        <a class="primary" href="events.html">Բացել միջոցառումները →</a>
+        <a href="events.html#new">+ Նոր միջոցառում</a>
+      </div>
+      <div class="figures" id="figures" hidden></div>
+    </div>
+
+    <section class="upcoming" aria-labelledby="upTitle">
+      <header><h2 id="upTitle">Առաջիկա միջոցառումներ</h2><a href="events.html">Բոլորը →</a></header>
+      <ul class="up-list" id="upList"><li class="up-empty" style="display:block">Առաջիկա միջոցառումներ չկան։ Ավելացրեք «+ Նոր միջոցառում» կոճակով։</li></ul>
+    </section>
+  </main>
+
+  <footer class="orgs" id="orgs" hidden>
+    <div class="orgs-in"><span>Կազմակերպություններ</span><ul id="orgList"></ul></div>
+  </footer>
+</div>
+
 <script src="data.js"></script>
 <script>
 (function(){
+  var MS=["հնվ","փտր","մրտ","ապր","մյս","հնս","հլս","օգս","սեպ","հոկ","նոյ","դեկ"];
+  function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+  function day(s){var p=String(s||"").split("-");return p.length===3?new Date(+p[0],p[1]-1,+p[2]):null}
   var ev=[]; try{ev=JSON.parse(localStorage.getItem("promtest-events-v1")||"[]")}catch(e){}
   if(!ev.length&&window.SEED_EVENTS)ev=window.SEED_EVENTS;
-  if(!ev.length)return;
   var t=new Date(); t.setHours(0,0,0,0);
-  var day=function(s){var p=String(s||"").split("-");return p.length===3?new Date(+p[0],p[1]-1,+p[2]):null};
   var up=ev.filter(function(e){var x=day(e.end)||day(e.start);return x&&x>=t}).sort(function(a,b){return (a.start||"").localeCompare(b.start||"")});
-  var box=document.getElementById("stats");
-  box.innerHTML='<div><b>'+ev.length+'</b>Ընդհանուր</div><div><b>'+up.length+'</b>Առաջիկա</div>';
-  if(up[0]){var s=document.createElement("div");var b=document.createElement("b");b.textContent=up[0].name;b.style.fontSize="15px";s.appendChild(b);s.appendChild(document.createTextNode("Հաջորդը"));box.appendChild(s);}
-  box.hidden=false;
+
+  // figures
+  if(ev.length){
+    var f=document.getElementById("figures");
+    [[ev.length,"Ընդհանուր"],[up.length,"Առաջիկա"],[ev.length-up.length,"Անցած"]].forEach(function(p){var d=el("div");d.appendChild(el("b",null,p[0]));d.appendChild(document.createTextNode(p[1]));f.appendChild(d)});
+    f.hidden=false;
+  }
+  // next 3 events
+  if(up.length){
+    var ul=document.getElementById("upList"); ul.textContent="";
+    up.slice(0,3).forEach(function(e){
+      var s=day(e.start), en=day(e.end), li=el("li"), dt=el("div","up-date"), body=el("div","up-body");
+      dt.appendChild(el("b",null,en&&en.getMonth()===s.getMonth()&&en.getDate()!==s.getDate()?s.getDate()+"–"+en.getDate():s.getDate()));
+      dt.appendChild(el("span",null,MS[s.getMonth()]+" "+s.getFullYear()));
+      var n=Math.round((s-t)/864e5);
+      body.appendChild(el("div","up-name",e.name));
+      var meta=[e.location,e.format].filter(Boolean).join(" · "); if(meta)body.appendChild(el("div","up-meta",meta));
+      body.appendChild(el("div","up-when",s<=t?"Ընթացքում է":n===0?"Այսօր":n+" օր հետո"));
+      li.appendChild(dt); li.appendChild(body); ul.appendChild(li);
+    });
+  }
+  // organizations from the lists
+  var lists=null; try{lists=JSON.parse(localStorage.getItem("promtest-lists-v1")||"null")}catch(e){}
+  var orgs=(lists&&Array.isArray(lists.orgs)&&lists.orgs.length?lists.orgs:(window.SEED_LISTS&&window.SEED_LISTS.orgs)||[]);
+  if(orgs.length){var ol=document.getElementById("orgList");orgs.forEach(function(o){ol.appendChild(el("li",null,o))});document.getElementById("orgs").hidden=false}
 })();
 </script>
 </body>
