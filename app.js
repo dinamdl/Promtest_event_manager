@@ -50,11 +50,18 @@ function applyPerms(){
   const db=mode==="db";
   $("addBtn").hidden=db&&(!canWrite||(!canEdit&&!me));
   $("importBtn").hidden=db&&!canEdit;
+  $("listsBtn").hidden=db&&!canEdit;
   $("mode").textContent=!db?"Տվյալները պահվում են այս բրաուզերում":
     canEdit?"Ընդհանուր տվյալներ · դուք ունեք լիարժեք իրավունք":
     (canWrite&&me)?"Կարող եք ավելացնել միջոցառում և խմբագրել ձեր ավելացրածը":"Միայն դիտում";
 }
-function useLocal(){mode="local"; events=loadLocal(); if(!events.length&&window.SEED_EVENTS){events=window.SEED_EVENTS.map(e=>({...e})); saveLocal();} applyPerms(); render();}
+function mergeSeedLists(){ // names newly added to SEED_LISTS (data.js) join lists already saved in this browser
+  const seed=window.SEED_LISTS; if(!seed||!lists)return; let prev={}, changed=false;
+  try{prev=JSON.parse(localStorage.getItem(LISTS_KEY+"-seed")||"{}")}catch(e){}
+  for(const [k] of LIST_DEFS)for(const v of seed[k]||[]){ if(!(prev[k]||[]).includes(v)&&!(lists[k]||[]).includes(v)){(lists[k]=lists[k]||[]).push(v);changed=true} }
+  try{ if(changed)localStorage.setItem(LISTS_KEY,JSON.stringify(lists)); localStorage.setItem(LISTS_KEY+"-seed",JSON.stringify(seed)) }catch(e){}
+}
+function useLocal(){try{lists=JSON.parse(localStorage.getItem(LISTS_KEY)||"null")}catch(e){lists=null} mergeSeedLists(); mode="local"; events=loadLocal(); if(!events.length&&window.SEED_EVENTS){events=window.SEED_EVENTS.map(e=>({...e})); saveLocal();} applyPerms(); render();}
 async function init(){
   render();
   if(!window.claude||!window.claude.use){useLocal();return}
@@ -66,6 +73,8 @@ async function init(){
   applyPerms();
   const onErr=e=>{toast("Տվյալները չհաջողվեց բեռնել ("+e.code+")։ Թարմացրեք էջը։")};
   col.onSnapshot(s=>{mainEvents=s.docs.map(d=>({id:d.id,...d.data(),_src:"main"})); merge();},onErr);
+  cfgRef=db.doc("config/lists");
+  cfgRef.onSnapshot(s=>{lists=s.exists?s.data():null; renderListsBody();},onErr);
   subs.onSnapshot(s=>{subDocs={}; s.docs.forEach(d=>{subDocs[d.id]=d.data()}); merge();},onErr);
   window.claude.use("downloads").then(d=>{downloads=d});
 }
@@ -137,17 +146,70 @@ function card(e){
     <span class="state ${st}">${label}</span></button>`;
 }
 function fillLists(){
-  const map={dl_org:"org",dl_format:"format",dl_location:"location",dl_resp:"responsible",dl_mat:"materials"};
+  const map={dl_format:"format",dl_location:"location"};
   for(const [id,f] of Object.entries(map)){$(id).innerHTML=[...new Set(events.map(e=>e[f]).filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join("")}
 }
 
+/* ---------- choice lists: organizations, responsible people, printed materials ---------- */
+const LISTS_KEY="promtest-lists-v1";
+const LIST_DEFS=[["orgs","Կազմակերպություններ","org"],["people","Պատասխանատուներ","responsible"],["materials","Տպագրական նյութեր","materials"]];
+const DEFAULT_LISTS=window.SEED_LISTS||{orgs:["Prom-Test"],people:["Diana B.","Աննա Աբազյան","Աննա Շագրիյան"],materials:["Roll-up","Բուկլետ","Թռուցիկ","Պաստառ"]};
+let lists=null, cfgRef=null;
+function L(k){return lists&&Array.isArray(lists[k])?lists[k]:DEFAULT_LISTS[k]}
+function splitMat(s){return String(s||"").split(/\s*[,;]\s*/).map(x=>x.trim()).filter(Boolean)}
+function allLists(){const o={};LIST_DEFS.forEach(([k])=>o[k]=[...L(k)]);return o}
+async function saveLists(next){
+  if(mode==="db"){await cfgRef.set(next)}
+  else{lists=next; try{localStorage.setItem(LISTS_KEY,JSON.stringify(next))}catch(e){} renderListsBody();}
+}
+function fillSelect(id,arr,cur){
+  const opts=[...arr]; if(cur&&!opts.includes(cur))opts.unshift(cur);
+  $(id).innerHTML='<option value="">— ընտրել —</option>'+opts.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("");
+}
+function fillChecks(val){
+  const cur=splitMat(val), base=L("materials"), opts=[...base,...cur.filter(x=>!base.includes(x))];
+  $("f_mat").innerHTML=opts.length?opts.map((v,i)=>`<label class="check"><input type="checkbox" id="mat_${i}" value="${esc(v)}"${cur.includes(v)?" checked":""}>${esc(v)}</label>`).join(""):'<span class="hint">Ցուցակը դատարկ է։ Ավելացրեք նյութեր «Ցուցակներ» բաժնում։</span>';
+}
+function renderListsBody(){
+  if($("listsOverlay").hidden)return;
+  $("listsBody").innerHTML=LIST_DEFS.map(([k,t])=>{const arr=L(k);
+    return `<section class="listsec"><h4>${t} <small>${arr.length}</small></h4>
+    <div class="chips">${arr.map((v,i)=>`<span class="chip edit">${esc(v)}<button type="button" data-k="${k}" data-i="${i}" aria-label="Հեռացնել ${esc(v)}">✕</button></span>`).join("")||'<span class="hint">Դատարկ է</span>'}</div>
+    <form class="addrow" data-k="${k}"><input id="add_${k}" placeholder="Նոր անուն" aria-label="Նոր անուն՝ ${t}"><button type="submit">Ավելացնել</button></form></section>`}).join("");
+}
+$("listsBtn").onclick=()=>{$("listsOverlay").hidden=false; renderListsBody();};
+$("listsClose").onclick=()=>$("listsOverlay").hidden=true;
+$("listsOverlay").addEventListener("click",e=>{if(e.target.id==="listsOverlay")$("listsOverlay").hidden=true});
+$("listsBody").addEventListener("click",async e=>{
+  const b=e.target.closest("button[data-i]"); if(!b)return;
+  const next=allLists(); const [v]=next[b.dataset.k].splice(+b.dataset.i,1);
+  try{await saveLists(next); toast("Հեռացվեց՝ "+v)}catch(err){toast("Չհաջողվեց պահպանել")}
+});
+$("listsBody").addEventListener("submit",async e=>{
+  e.preventDefault(); const k=e.target.dataset.k, inp=$("add_"+k), v=inp.value.trim(); if(!v)return;
+  const next=allLists(); if(next[k].some(x=>x.toLowerCase()===v.toLowerCase())){toast("Արդեն կա ցուցակում");return}
+  next[k].push(v);
+  try{await saveLists(next); $("add_"+k)&&$("add_"+k).focus()}catch(err){toast("Չհաջողվեց պահպանել")}
+});
+$("harvestBtn").onclick=async()=>{
+  const next=allLists(); let n=0;
+  for(const [k,,field] of LIST_DEFS){
+    const vals=field==="materials"?events.flatMap(e=>splitMat(e.materials)):events.map(e=>(e[field]||"").trim()).filter(Boolean);
+    for(const v of vals)if(!next[k].some(x=>x.toLowerCase()===v.toLowerCase())){next[k].push(v);n++}
+  }
+  if(!n){toast("Նոր անուններ չգտնվեցին");return}
+  try{await saveLists(next); toast("Ավելացվեց "+n+" անուն")}catch(err){toast("Չհաջողվեց պահպանել")}
+};
+
 /* ---------- form ---------- */
-const F={name:"f_name",start:"f_start",end:"f_end",time:"f_time",regDate:"f_reg",org:"f_org",format:"f_format",location:"f_location",responsible:"f_resp",audience:"f_aud",materials:"f_mat",notes:"f_notes"};
+const F={name:"f_name",start:"f_start",end:"f_end",time:"f_time",regDate:"f_reg",org:"f_org",format:"f_format",location:"f_location",responsible:"f_resp",audience:"f_aud",notes:"f_notes"};
 function openForm(id){
   editingId=id||null; const ev=events.find(e=>e.id===id)||{org:"Prom-Test",format:"Հովանավոր",regDate:new Date().toISOString().slice(0,10)};
+  fillSelect("f_org",L("orgs"),ev.org||""); fillSelect("f_resp",L("people"),ev.responsible||""); fillChecks(ev.materials);
   for(const [k,el] of Object.entries(F))$(el).value=ev[k]||"";
   const ro=!!id&&!mayEdit(ev);
   for(const el of Object.values(F))$(el).disabled=ro;
+  $("f_mat").querySelectorAll("input").forEach(i=>i.disabled=ro);
   $("saveBtn").hidden=ro; $("cancelBtn").textContent=ro?"Փակել":"Չեղարկել";
   $("formTitle").textContent=!id?"Նոր միջոցառում":ro?"Միջոցառում":"Խմբագրել";
   $("delBtn").hidden=!id||(mode==="db"&&!canEdit); $("confirmBox").hidden=true; $("overlay").hidden=false; $("f_name").focus();
@@ -156,6 +218,7 @@ function closeForm(){$("overlay").hidden=true; editingId=null}
 $("form").addEventListener("submit",async ev=>{
   ev.preventDefault();
   const o={}; for(const [k,el] of Object.entries(F))o[k]=$(el).value.trim();
+  o.materials=[...$("f_mat").querySelectorAll("input:checked")].map(i=>i.value).join(", ");
   if(!o.name||!o.start){toast("Լրացրեք անվանումը և սկզբի ամսաթիվը։");return}
   if(o.end&&o.end<o.start){toast("Ավարտը չի կարող լինել սկզբից շուտ։");return}
   if(editingId)o.id=editingId;
@@ -167,7 +230,7 @@ $("noDel").onclick=()=>$("confirmBox").hidden=true;
 $("yesDel").onclick=async()=>{if(mode==="db"&&!canEdit)return;try{await removeEvent(editingId); closeForm(); toast("Ջնջված է")}catch(e){toast("Չհաջողվեց ջնջել")}};
 $("closeBtn").onclick=$("cancelBtn").onclick=closeForm;
 $("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeForm()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("overlay").hidden)closeForm()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return; if(!$("overlay").hidden)closeForm(); else if(!$("listsOverlay").hidden)$("listsOverlay").hidden=true;});
 $("addBtn").onclick=()=>openForm();
 $("list").addEventListener("click",e=>{const b=e.target.closest(".ev"); if(b)openForm(b.dataset.id)});
 $("q").addEventListener("input",render); $("person").addEventListener("change",render);

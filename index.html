@@ -18,6 +18,7 @@
       <p class="sub">Հովանավորվող կոնֆերանսներ, պատասխանատուներ և տպագրական նյութեր</p>
     </div>
     <div class="actions">
+      <button id="listsBtn" type="button">Ցուցակներ</button>
       <button id="importBtn" type="button">Ներմուծել CSV</button>
       <button id="exportBtn" type="button">Արտահանել CSV</button>
       <button id="addBtn" class="primary" type="button">+ Նոր միջոցառում</button>
@@ -49,15 +50,17 @@
       <label>Ավարտ (եթե մի քանի օր է)<input id="f_end" type="date"></label>
       <label>Ժամ<input id="f_time" placeholder="օր.՝ 10:00"></label>
       <label>Գրանցման ամսաթիվ<input id="f_reg" type="date"></label>
-      <label>Կազմակերպություն<input id="f_org" list="dl_org"></label>
+      <label>Կազմակերպություն<select id="f_org"></select></label>
       <label>Ներկայացման ձևաչափ<input id="f_format" list="dl_format" placeholder="Հովանավոր"></label>
       <label>Վայր<input id="f_location" list="dl_location"></label>
-      <label>Պատասխանատու<input id="f_resp" list="dl_resp"></label>
+      <label>Պատասխանատու<select id="f_resp">
+       
+      </select></label>
     </div>
     <label>Թիրախային լսարան<textarea id="f_aud" rows="2"></textarea></label>
-    <label>Տպագրական նյութեր<input id="f_mat" list="dl_mat" placeholder="Roll-up, բուկլետ…"></label>
+    <div class="field" role="group" aria-labelledby="matLbl"><span id="matLbl">Տպագրական նյութեր</span><div id="f_mat" class="checks"></div></div>
     <label>Նշումներ<textarea id="f_notes" rows="3"></textarea></label>
-    <datalist id="dl_org"></datalist><datalist id="dl_format"></datalist><datalist id="dl_location"></datalist><datalist id="dl_resp"></datalist><datalist id="dl_mat"></datalist>
+    <datalist id="dl_format"></datalist><datalist id="dl_location"></datalist>
     <div id="confirmBox" class="confirm" hidden>Ջնջե՞լ այս միջոցառումը։ <button type="button" id="yesDel" class="danger">Այո, ջնջել</button><button type="button" id="noDel">Չեղարկել</button></div>
     <div class="row">
       <button type="button" id="delBtn" class="danger" hidden>Ջնջել</button>
@@ -65,6 +68,14 @@
       <div class="actions"><button type="button" id="cancelBtn">Չեղարկել</button><button type="submit" id="saveBtn" class="primary">Պահպանել</button></div>
     </div>
   </form>
+</div>
+<div class="overlay" id="listsOverlay" hidden>
+  <div class="panel" role="dialog" aria-labelledby="listsTitle">
+    <div class="row"><h3 id="listsTitle">Ցուցակներ</h3><button type="button" id="listsClose" aria-label="Փակել">✕</button></div>
+    <p class="hint">Այս անունները հայտնվում են միջոցառման ձևում՝ ընտրելու համար։ Փոփոխությունները պահպանվում են անմիջապես։</p>
+    <div id="listsBody" style="display:grid;gap:16px"></div>
+    <button type="button" id="harvestBtn">Ավելացնել միջոցառումներում արդեն օգտագործված անունները</button>
+  </div>
 </div>
 <div class="toast" id="toast" hidden></div>
 
